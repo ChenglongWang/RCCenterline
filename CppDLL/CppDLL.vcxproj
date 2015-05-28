@@ -156,6 +156,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ComputeConvexHull.cpp" />
     <ClCompile Include="RCCenterlineCpp.cpp" />
   </ItemGroup>
   <ItemGroup>
