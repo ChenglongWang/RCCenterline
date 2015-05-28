@@ -64,9 +64,10 @@ namespace Plugin
 			{
 				// しきい値を設定する．
 				int target = ( int )this.numericObject.Value;
+                bool oppsite = ( bool )this.checkOppsite.Checked;
 
 				// しきい値処理を行う．
-				if( RCCenterlineCpp( ct.Image, centerLine.Image, target ) == false )
+				if( RCCenterlineCpp( ct.Image, centerLine.Image, target, oppsite) == false )
 				{
 					return ( null );
 				}
@@ -137,6 +138,6 @@ namespace Plugin
 		#endregion
 
 		[DllImport( "RCCenterline.dll", EntryPoint="Run", CallingConvention=CallingConvention.Cdecl)]
-		internal static extern bool RCCenterlineCpp(IntPtr originImage, IntPtr centerline, int target );
+		internal static extern bool RCCenterlineCpp(IntPtr originImage, IntPtr centerline, int target, bool oppsite);
 	}
 }

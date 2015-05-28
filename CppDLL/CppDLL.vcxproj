@@ -77,6 +77,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(PLUTO_DIR)</OutDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(PLUTO_DIR)</OutDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -156,6 +159,7 @@
     <ClCompile Include="RCCenterlineCpp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="eigen.h" />
     <ClInclude Include="fit.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -32,13 +32,14 @@
             this.buttonOK = new System.Windows.Forms.Button();
             this.label = new System.Windows.Forms.Label();
             this.numericObject = new System.Windows.Forms.NumericUpDown();
+            this.checkOppsite = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericObject)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonCancel
             // 
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(58, 32);
+            this.buttonCancel.Location = new System.Drawing.Point(58, 77);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(81, 23);
             this.buttonCancel.TabIndex = 21;
@@ -48,7 +49,7 @@
             // 
             // buttonOK
             // 
-            this.buttonOK.Location = new System.Drawing.Point(8, 32);
+            this.buttonOK.Location = new System.Drawing.Point(8, 77);
             this.buttonOK.Name = "buttonOK";
             this.buttonOK.Size = new System.Drawing.Size(44, 23);
             this.buttonOK.TabIndex = 22;
@@ -88,12 +89,23 @@
             0,
             0});
             // 
+            // checkOppsite
+            // 
+            this.checkOppsite.AutoSize = true;
+            this.checkOppsite.Location = new System.Drawing.Point(59, 42);
+            this.checkOppsite.Name = "checkOppsite";
+            this.checkOppsite.Size = new System.Drawing.Size(63, 16);
+            this.checkOppsite.TabIndex = 23;
+            this.checkOppsite.Text = "Oppsite";
+            this.checkOppsite.UseVisualStyleBackColor = true;
+            // 
             // CalixCenterlinePlugin
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(145, 63);
+            this.ClientSize = new System.Drawing.Size(145, 108);
             this.ControlBox = false;
+            this.Controls.Add(this.checkOppsite);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOK);
             this.Controls.Add(this.label);
@@ -115,5 +127,6 @@
 		private System.Windows.Forms.Button buttonOK;
 		private System.Windows.Forms.Label label;
 		private System.Windows.Forms.NumericUpDown numericObject;
+        private System.Windows.Forms.CheckBox checkOppsite;
 	}
 }

@@ -1,59 +1,98 @@
 #pragma once
 #include <vector>
 #include "mist/mist.h"
+#include "eigen.h"
+#include <algorithm>
 
 namespace ls{
 	class Fit{
 	private:
-		std::vector<double> _factor; ///<拟合后的方程系数
+//		std::vector<double> _factor; ///<拟合后的方程系数
+		int _centroid[3];
+		double _direction[3];
 		double ssr;                 ///<回归平方和
 		double sse;                 ///<(剩余平方和)
 		double rmse;                ///<RMSE均方根误差
 		std::vector<double> fitedYs;
 	public:
-		Fit():ssr(0),sse(0),rmse(0){_factor.resize(3,0);}
+		Fit():ssr(0),sse(0),rmse(0)
+		{
+			_centroid[0] = _centroid[1] = _centroid[2] = 0;
+			_direction[0] = _direction[1] = _direction[2] = 0;
+		}
 		~Fit(){}
 
-		inline void ComputeIJK(size_t id, size_t IJK[3], size_t dim_x, size_t dim_y, size_t dim_z)
+		inline bool ComputeIJK(size_t id, int IJK[3], size_t dim_x, size_t dim_y, size_t dim_z)
 		{
 			if(id < 0) 
-				return;
+				return false;
 
 			IJK[0] = id % dim_x;
 			IJK[1] = (id / dim_x) % dim_y;
 			IJK[2] = id / (dim_x * dim_y);
+			
+			return true;
 		}
 
-		bool linearFit(const mist::array3<short>* originImage, const std::vector<size_t>& points, bool isSaveFitYs=false)
+		bool ComputeIJK(const std::vector<size_t>& points, std::vector<std::vector<int>>& IJKContainer, int dim_x, int dim_y, int dim_z)
 		{
-			_factor.resize(3,0);
-			size_t ijk[3];
-			double sum_xx = 0, sum_x = 0, sum_xy = 0, sum_y = 0, sum_z = 0, sum_yy = 0, sum_zx = 0, sum_zy = 0;
-			for(size_t i=0; i < points.size(); ++i)
-			{
-				ComputeIJK(points[i], ijk, originImage->size1(), originImage->size2(), originImage->size3());
+			if (IJKContainer.size() != 3)
+				return false; 
 
-// 				sum_xx += ijk[0] * ijk[0];
-// 				sum_x += ijk[0];
-// 				sum_xy += ijk[0] * ijk[1];
-// 				sum_y += ijk[1];
-// 				sum_yy += ijk[1] * ijk[1];
-// 				sum_z += ijk[2];
-// 				sum_zx += ijk[2] * ijk[0];
-// 				sum_zy += ijk[2] * ijk[1];
+			for_each(IJKContainer.begin(), IJKContainer.end(), [](std::vector<int>& v){ v.clear(); });
+
+			int ijk[3] = {0};
+			for (size_t i = 0; i < points.size(); ++i)
+			{
+				ComputeIJK(points[i], ijk, dim_x, dim_y, dim_z);
+				IJKContainer[0].push_back(ijk[0]);
+				IJKContainer[1].push_back(ijk[1]);
+				IJKContainer[2].push_back(ijk[2]);
 			}
 
-// 			double theta_1 = sum_z * sum_x - points.size() * sum_zx;
-// 			double theta_2 = points.size() * sum_xx - sum_x * sum_x;
-// 			double theta_3 = points.size() * sum_xy - sum_x * sum_y;
-// 			
-// 			double lambda_1 = sum_z * sum_y - points.size() * sum_zy;
-// 			double lambda_2 = points.size() * sum_xy - sum_x * sum_y;
-// 			double lambda_3 = points.size() * sum_yy - sum_y * sum_y;
+			return true;
+		}
 
-// 			_factor[2] = (lambda_1 * theta_2 - theta_1 * lambda_2) / (theta_3 * lambda_2 - theta_2 * lambda_3);
-// 			_factor[1] = (theta_1 * lambda_3 - theta_3 * lambda_1) / (theta_3 * lambda_2 - theta_2 * lambda_3);
-// 			_factor[0] = (sum_z - sum_x * _factor[1] - sum_y * _factor[2]) / points.size();
+		bool LinearFit(const mist::array3<short>* originImage, const std::vector<size_t>& points, bool isSaveFitYs=false)
+		{
+			int ijk[3];
+			int centroid[3];
+			double direction[3];
+
+			std::vector<int> container_x, container_y, container_z;
+			std::vector<std::vector<int>> IJKContainer(3);
+			IJKContainer[0] = container_x;
+			IJKContainer[1] = container_y;
+			IJKContainer[2] = container_z;
+
+			if (!ComputeIJK(points, IJKContainer, originImage->size1(), originImage->size2(), originImage->size3()))
+				return false;
+
+			if (!ComputeCentroid(IJKContainer, centroid))
+				return false;
+
+			double covariance[6] = { 0 };
+			for(size_t i=0; i < points.size(); ++i)
+			{
+				int offset_x = IJKContainer[0][i] - centroid[0];
+				int offset_y = IJKContainer[1][i] - centroid[1];
+				int offset_z = IJKContainer[2][i] - centroid[2];
+
+				covariance[0] += offset_x * offset_x;
+				covariance[1] += offset_x * offset_y;
+				covariance[2] += offset_y * offset_y;
+				covariance[3] += offset_x * offset_z;
+				covariance[4] += offset_y * offset_z;
+				covariance[5] += offset_z * offset_z;
+			}
+
+			auto quality = Fitting(covariance, direction);
+			_centroid[0] = centroid[0];
+			_centroid[1] = centroid[1];
+			_centroid[2] = centroid[2];
+			_direction[0] = direction[0];
+			_direction[1] = direction[1];
+			_direction[2] = direction[2];
 
 //			calcError(x,y,length,this->ssr,this->sse,this->rmse,isSaveFitYs);
 			return true;
@@ -110,12 +149,22 @@ namespace ls{
 
 		}
 		*/
-		/// 
-		/// \brief 获取系数
-		/// \param 存放系数的数组
-		///
-		void getFactor(std::vector<double>& factor){factor = this->_factor;}
-		/// 
+
+		void GetCentroid(int center[3])
+		{
+			center[0] = _centroid[0];
+			center[1] = _centroid[1];
+			center[2] = _centroid[2];
+		}
+
+		void GetDirection(double direction[3])
+		{
+			direction[0] = _direction[0];
+			direction[1] = _direction[1];
+			direction[2] = _direction[2];
+		}
+
+/*		/// 
 		/// \brief 获取拟合方程对应的y值，前提是拟合时设置isSaveFitYs为true
 		///
 		void getFitedYs(std::vector<double>& fitedYs){fitedYs = this->fitedYs;}
@@ -204,8 +253,59 @@ namespace ls{
 		/// \return 拟合方程的系数
 		///
 		double getFactor(size_t i){return _factor.at(i);}
+		*/
 	private:
-		template<typename T>
+		bool ComputeCentroid(const std::vector<std::vector<int>>& IJKContainer, int centerPoint[3])
+		{
+			if (IJKContainer.size() != 3 ||
+				IJKContainer[0].size() != IJKContainer[1].size() ||
+				IJKContainer[1].size() != IJKContainer[2].size() ||
+				IJKContainer[2].size() != IJKContainer[0].size())
+				return false;
+
+			auto container_x = IJKContainer[0];
+			auto container_y = IJKContainer[1];
+			auto container_z = IJKContainer[2];
+
+			int sum_x = 0, sum_y = 0, sum_z = 0;
+			for (size_t i = 0; i < container_x.size(); ++i)
+			{
+				sum_x += container_x[i];
+				sum_y += container_y[i];
+				sum_z += container_z[i];
+			}
+
+			centerPoint[0] = static_cast<int>(sum_x / container_x.size());
+			centerPoint[1] = static_cast<int>(sum_y / container_x.size());
+			centerPoint[2] = static_cast<int>(sum_z / container_x.size());
+
+			return true;
+		}
+
+		double Fitting(const double covariance[6], double direction[3])
+		{
+			double eigenValues[3];
+			double eigenVectors[9];
+
+			eigen_symmetric<double>(covariance, 3, eigenVectors, eigenValues);
+
+			if (eigenValues[0] == eigenValues[1] &&
+				eigenValues[0] == eigenValues[2])
+			{
+				direction[0] = 1;
+				direction[1] = direction[2] = 0;
+				return 0;
+			}
+			else
+			{
+				direction[0] = eigenVectors[0];
+				direction[1] = eigenVectors[1];
+				direction[2] = eigenVectors[2];
+				return static_cast<double>(1 - eigenValues[1] / eigenValues[0]);
+			}
+		}
+
+/*		template<typename T>
 		void calcError(const T* x
 			,const T* y
 			,size_t length
@@ -248,7 +348,7 @@ namespace ls{
 			double max;
 			for (k=0;k<n-1;k++)
 			{
-				max=fabs(A[k*n+k]); /*find maxmum*/
+				max=fabs(A[k*n+k]); //find maximum
 				r=k;
 				for (i=k+1;i<n-1;i++){
 					if (max<fabs(A[i*n+i]))
@@ -258,14 +358,14 @@ namespace ls{
 					}
 				}
 				if (r!=k){
-					for (i=0;i<n;i++)         /*change array:A[k]&A[r] */
+					for (i=0;i<n;i++)
 					{
 						max=A[k*n+i];
 						A[k*n+i]=A[r*n+i];
 						A[r*n+i]=max;
 					}
 				}
-				max=b[k];                    /*change array:b[k]&b[r]     */
+				max=b[k];
 				b[k]=b[r];
 				b[r]=max;
 				for (i=k+1;i<n;i++)
@@ -279,6 +379,6 @@ namespace ls{
 			for (i=n-1;i>=0;x[i]/=A[i*n+i],i--)
 				for (j=i+1,x[i]=b[i];j<n;j++)
 					x[i]-=A[i*n+j]*x[j];
-		}
+		}*/
 	};
 }
