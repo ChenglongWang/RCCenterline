@@ -66,7 +66,7 @@ namespace Plugin
                 bool oppsite = ( bool )this.checkOppsite.Checked;
 
 //				if( RCCenterlineCpp( ct.Image, centerLine.Image, target, oppsite) == false )
-                if( ComputeConvexHull(ct.Image, target, centerLine.Image) == false)
+                if( ComputeConvexHull(ct.Image, target, 20, centerLine.Image) == false)
 				{
 					return ( null );
 				}
@@ -140,7 +140,7 @@ namespace Plugin
 		internal static extern bool RCCenterlineCpp(IntPtr originImage, IntPtr centerline, int target, bool oppsite);
 
         [DllImport("RCCenterline.dll", EntryPoint = "ComputeConvexHull", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern bool ComputeConvexHull(IntPtr originImage, int target, IntPtr output);
+        internal static extern bool ComputeConvexHull(IntPtr originImage, int target, int seedLabel, IntPtr output);
 
 	}
 }

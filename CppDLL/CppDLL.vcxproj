@@ -110,7 +110,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(MIST_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MIST_DIR);$(solutiondir)/CppDLL/VesselLabeling/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
@@ -145,7 +145,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(MIST_DIR)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MIST_DIR);$(solutiondir)/CppDLL/VesselLabeling/;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
@@ -162,6 +162,18 @@
   <ItemGroup>
     <ClInclude Include="eigen.h" />
     <ClInclude Include="fit.h" />
+    <ClInclude Include="VesselLabeling\artery.h" />
+    <ClInclude Include="VesselLabeling\config.h" />
+    <ClInclude Include="VesselLabeling\dictionary.h" />
+    <ClInclude Include="VesselLabeling\graph.h" />
+    <ClInclude Include="VesselLabeling\header.h" />
+    <ClInclude Include="VesselLabeling\image.h" />
+    <ClInclude Include="VesselLabeling\tree.h" />
+    <ClInclude Include="VesselLabeling\tubular.h" />
+    <ClInclude Include="VesselLabeling\vessel.h" />
+    <ClInclude Include="VesselLabeling\xml.h" />
+    <ClInclude Include="VesselLabeling\zconf.h" />
+    <ClInclude Include="VesselLabeling\zlib.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
